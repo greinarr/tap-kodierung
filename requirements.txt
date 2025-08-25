@@ -1,0 +1,8 @@
+python-docx
+pandas
+pyyaml
+rapidfuzz
+streamlit
+# optional:
+# spacy
+# de-core-news-sm  # per: python -m spacy download de_core_news_sm
