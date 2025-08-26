@@ -40,26 +40,48 @@ if c3.button("Weiter ▶"):
 
 row = df.iloc[st.session_state.idx]
 
-st.subheader("Text")
-st.write(row.get("text", ""))
+def confidence_text(c):
+    if c is None:
+        return "unbekannt"
+    if c >= 0.8:
+        return "sehr sicher"
+    if c >= 0.6:
+        return "eher sicher"
+    if c >= 0.4:
+        return "eher unsicher"
+    return "sehr unsicher"
 
-st.subheader("Vorschläge")
-st.write(f"**Labels:** {row.get('suggested_labels','')}")
-st.write(f"**Scores:** {row.get('scores','')} | **Conf:** {row.get('confidences','')}")
-st.write(f"**Evidenz:** {row.get('evidence','')}")
+evidence = (row.get("evidence", "") or "").split("|")[0]
+current = (row.get("suggested_labels", "") or "").split("|")[0]
+conf_raw = (row.get("confidences", "") or "").split("|")[0]
+try:
+    conf_val = float(conf_raw)
+except Exception:
+    conf_val = None
 
-st.subheader("Korrigieren / Bestätigen")
-current = (row.get("suggested_labels","").split("|")[0] if isinstance(row.get("suggested_labels",""), str) and row.get("suggested_labels","") else "")
-choice = st.selectbox("Label wählen", [""] + categories, index=([""] + categories).index(current) if current in categories else 0)
-notes = st.text_input("Kommentar/Notiz", value=row.get("review_note", ""))
+st.subheader("Automatische Zuordnung")
+st.write(f"**Gefundener String:** {evidence}")
+st.write(f"**Kategorie:** {current}")
+st.write(f"**Sicherheit:** {confidence_text(conf_val)}")
 
-c4, c5 = st.columns(2)
-if c4.button("Label übernehmen"):
-    df.at[row.name, "final_label"] = choice
-    df.at[row.name, "review_note"] = notes
-    save(df)
-if c5.button("Überspringen"):
-    st.session_state.idx = min(len(df)-1, st.session_state.idx + 1)
+if "changing" not in st.session_state:
+    st.session_state.changing = False
+
+if not st.session_state.changing:
+    c4, c5 = st.columns(2)
+    if c4.button("Bestätigen"):
+        df.at[row.name, "final_label"] = current
+        save(df)
+        st.session_state.idx = min(len(df)-1, st.session_state.idx + 1)
+    if c5.button("Ändern"):
+        st.session_state.changing = True
+else:
+    new_label = st.selectbox("Neue Kategorie wählen", categories, index=categories.index(current) if current in categories else 0)
+    if st.button("Übernehmen"):
+        df.at[row.name, "final_label"] = new_label
+        save(df)
+        st.session_state.changing = False
+        st.session_state.idx = min(len(df)-1, st.session_state.idx + 1)
 
 # Optional: Leitfaden-Schnipsel anzeigen (falls im YAML meta/desc vorhanden)
 with st.expander("Leitfaden (Ausschnitt)"):
