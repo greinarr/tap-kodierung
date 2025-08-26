@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-semi_auto_coder_v4.py — Semi-automatisches Kodieren mit Redirects, Valenz (Kontext + Heuristik)
+semi_auto_coder_v2.py — Semi-automatisches Kodieren mit Redirects, Valenz (Kontext + Heuristik)
 Install:
     pip install python-docx pandas pyyaml rapidfuzz
     # optional:
     # pip install spacy && python -m spacy download de_core_news_sm
 
 Beispiel:
-    python semi_auto_coder_v4.py ./data TAP_codebook.yaml output/out.csv -r \
+    python semi_auto_coder_v2.py ./data TAP_codebook.yaml output/out.csv -r \
       -k 3 --min-score 1.0 --fuzzy-threshold 82 --w-fuzzy 1.0 --lemmatize
 """
 import argparse, csv, re, sys, unicodedata
@@ -68,7 +68,8 @@ def find_docx_paths(path: Path, recursive: bool) -> List[Path]:
     if path.is_file() and path.suffix.lower() == ".docx":
         return [path]
     if path.is_dir():
-        return [p for p in (path.rglob("*.docx") if recursive else path.glob("*.docx")) if p.is_file()]
+        globber = path.rglob("*") if recursive else path.glob("*")
+        return [p for p in globber if p.is_file() and p.suffix.lower() == ".docx"]
     return []
 
 def detect_ctx_valence(text: str) -> Optional[str]:

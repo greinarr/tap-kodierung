@@ -55,7 +55,7 @@ categories:
       - Anmerkungen fördern
       - antwortet auf Fragen
     regex:
-      - Gruppen(arbet|arbeit)
+      - Gruppenarbeit(en)?
       - Diskussion(en)?
       - "Fragen\\s*(und|&)?\\s*Antwort(en)?"
       - moderier
