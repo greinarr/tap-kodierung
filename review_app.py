@@ -13,6 +13,8 @@ def load_args():
 
 args = load_args()
 df = pd.read_csv(args.csv)
+if "evidence" in df.columns:
+    df["evidence"] = df["evidence"].fillna("")
 with open(args.codebook, "r", encoding="utf-8") as f:
     codebook = yaml.safe_load(f) or {}
 
@@ -46,7 +48,8 @@ st.write(row.get("text", ""))
 st.subheader("Vorschläge")
 st.write(f"**Labels:** {row.get('suggested_labels','')}")
 st.write(f"**Scores:** {row.get('scores','')} | **Conf:** {row.get('confidences','')}")
-st.write(f"**Evidenz:** {row.get('evidence','')}")
+evidence = str(row.get("evidence", "") or "").split("|")[0]
+st.write(f"**Evidenz:** {evidence}")
 
 st.subheader("Korrigieren / Bestätigen")
 current = (row.get("suggested_labels","").split("|")[0] if isinstance(row.get("suggested_labels",""), str) and row.get("suggested_labels","") else "")
